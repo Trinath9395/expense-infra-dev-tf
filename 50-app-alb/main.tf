@@ -28,8 +28,17 @@ resource "aws_alb_listener" "http" {
       message_body = "<h1>Hello, I am from backend APP ALB</h1>"
       status_code = "200"
     }
-  }
-  
-    
+  }  
+}
 
+resource "aws_route53_record" "app_alb" {
+  zone_id = var.zone_id
+  name = var.domain_name
+  type = "A"
+
+  alias {
+    name = module.alb.dns_name
+    zone_id = module.alb.zone_id
+    evaluate_target_health = true
+  }
 }

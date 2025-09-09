@@ -13,3 +13,11 @@ variable "common_tags" {
     Terraform = "true"
   }
 }
+variable "zone_id" {
+  default = "Z04937802OYFAGU4M6BTX"
+
+}
+
+variable "domain_name" {
+  default = "trinath.online"
+}
