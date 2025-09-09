@@ -47,3 +47,12 @@ module "app_alb_sg" {
   project_name = "expense"
   environment = "dev"
 }
+
+resource "aws_security_group_rule" "app_alb_bastion" {
+  type = "ingress"
+  from_port = "80"
+  to_port = "80"
+  protocol = "tcp"
+  source_security_group_id = [module.bastion_sg.sg_id]
+  security_group_id = module.app_alb_sg.sg_id
+}
