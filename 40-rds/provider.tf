@@ -7,10 +7,10 @@ terraform {
   }
 
   backend s3 {
-  bucket = "82s-tf-remote-state-dev-pr"
-  key = "sg-infra-dev"
+  bucket = "82-remote-state-pr"
+  key = "expense-dev-rds"
   region = "us-east-1"
-  use_lockfile = false
+  use_lockfile = true
  }
 
 }

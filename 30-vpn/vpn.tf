@@ -9,7 +9,7 @@ resource "aws_instance" "openvpnas" {
   subnet_id                   = local.public_subnet_id
   instance_type               = "t2.micro"
   associate_public_ip_address = true
-  key_name                    = aws_key_pair.openvpnas.key_name   # 👈 attach keypair here
+  user_data = file("user-data.sh")
 
   tags = merge(
     var.common_tags,
@@ -17,4 +17,9 @@ resource "aws_instance" "openvpnas" {
       Name = local.bastion_name
     }
   )
+}
+
+output "vpn_ip" {
+  description = "Display the VPN IP address"
+  value       = aws_instance.openvpnas.public_ip
 }
