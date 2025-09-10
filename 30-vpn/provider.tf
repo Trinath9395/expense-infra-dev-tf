@@ -8,7 +8,7 @@ terraform {
 
   backend s3 {
   bucket = "82s-tf-remote-state-dev-pr"
-  key = "expense-dev-vpn"
+  key = "expense--infra-dev-vpn"
   region = "us-east-1"
   use_lockfile = true
  }
