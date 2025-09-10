@@ -65,7 +65,7 @@ module "db" {
   )
 }
 
-resource "aws_route53_record" "www-dev" {
+resource "aws_route53_record" "rds_route" {
   zone_id = var.zone_id
   name    = "mysql-${var.environment}.${var.domain_name}"
   type    = "CNAME"
