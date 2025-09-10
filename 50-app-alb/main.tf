@@ -18,10 +18,10 @@ module "alb" {
 resource "aws_alb_listener" "http" {
   load_balancer_arn = module.alb.arn
   port = "80"
-  protocol = "http"
+  protocol = "HTTP"
 
   default_action {
-    type = "fixed-responce"
+    type = "fixed-response"
 
     fixed_response {
       content_type = "text/html"
@@ -33,12 +33,13 @@ resource "aws_alb_listener" "http" {
 
 resource "aws_route53_record" "app_alb" {
   zone_id = var.zone_id
-  name = "*.app-dev${var.domain_name}"
-  type = "A"
+  name    = "*.app-dev.${var.domain_name}"
+  type    = "A"
 
+  # these are ALB DNS name and zone information
   alias {
-    name = module.alb.dns_name
-    zone_id = module.alb.zone_id
+    name                   = module.alb.dns_name
+    zone_id                = module.alb.zone_id
     evaluate_target_health = false
   }
 }
