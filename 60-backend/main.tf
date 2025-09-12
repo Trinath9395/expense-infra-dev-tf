@@ -49,10 +49,98 @@ resource "aws_ami_from_instance" "backend" {
   depends_on = [aws_ec2_instance_state.backend]
 }
 
-resource "null_resource" "backend" {
+resource "null_resource" "backend_delete" {
   provisioner "local-exec" {
     command = "aws ec2 terminate-instances --instance-ids ${aws_instance.backend.id}"
   }
 
   depends_on = [aws_ami_from_instance.backend]
+}
+
+resource "aws_lb_target_group" "backend" {
+  name = local.backend_name
+  port = 8080
+  protocol = "HTTP"
+  vpc_id = local.vpc_id
+
+  health_check {
+    healthy_threshold = 2
+    unhealthy_threshold = 2
+    timeout = 5 
+    protocol = "HTTP"
+    port = 8080
+    path = "/health"
+    matcher = "200-299"
+    interval = 10
+  }
+}
+resource "aws_launch_template" "backend" {
+  name = local.backend_name
+  image_id = aws_ami_from_instance.backend.id 
+  instance_initiated_shutdown_behavior = "terminate"
+  instance_type = "t2.micro"
+  vpc_security_group_ids = [local.backend_sg_id]
+  update_default_version = true
+
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = {
+      Name = local.backend_name
+    }
+  }
+
+}
+
+resource "aws_autoscaling_group" "backend" {
+  name                      = local.backend_name
+  max_size                  = 5
+  min_size                  = 2
+  health_check_grace_period = 60
+  health_check_type         = "ELB"
+  desired_capacity          = 2
+  target_group_arns = [aws_lb_target_group.backend.arn]
+  launch_template {
+    id = aws_ami_from_instance.backend.id 
+    version = "$Latest"
+  }
+  vpc_zone_identifier       = local.private_subnet_ids
+  instance_refresh {
+    strategy = "Rolling"
+    preferences {
+      min_healthy_percentage = 50
+    }
+    triggers = ["launch_template"]
+  }
+  tag {
+    key                 = "Name"
+    value               = local.backend_name
+    propagate_at_launch = true
+  }
+
+  timeouts {
+    delete = "5m"
+  }
+
+  tag {
+    key                 = "Environment"
+    value               = "dev"
+    propagate_at_launch = false
+  }
+}
+
+resource "aws_lb_listener_rule" "backend" {
+  listener_arn = local.app_alb_listner_arn
+  priority     = 10
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend.arn
+  }
+
+  condition {
+    host_header {
+      values = ["backend.app-${var.environment}.${var.domain_name}"]
+    }
+  }
 }
