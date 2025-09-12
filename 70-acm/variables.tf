@@ -17,3 +17,7 @@ variable "common_tags" {
 variable "domain_name" {
   default = "trinath.online"
 }
+
+variable "zone_id" {
+  default = "Z04937802OYFAGU4M6BTX"
+}
