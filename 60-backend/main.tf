@@ -133,6 +133,21 @@ resource "aws_autoscaling_group" "backend" {
   }
 }
 
+resource "aws_autoscaling_policy" "backend" {
+  name                   = local.backend_name
+  policy_type            = "TargetTrackingScaling"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.backend.name
+
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+
+    target_value = 70.0
+  }
+}
+
 resource "aws_lb_listener_rule" "backend" {
   listener_arn = local.app_alb_listner_arn
   priority     = 10
